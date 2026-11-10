@@ -31,9 +31,33 @@ label{display:block;font-size:14px;color:var(--mu);margin:10px 0 4px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
 .k{border:1px solid var(--ln);border-radius:6px;padding:10px}
 .k small{display:block;color:var(--mu)}.k b{font-size:22px}
-.err{border-left:5px solid var(--bad);background:var(--bw);padding:12px;border-radius:6px;margin-bottom:10px}
+.er{display:grid;grid-template-columns:36px 1fr auto;gap:4px 12px;align-items:center;border:1px solid var(--ln);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--sf)}
+.er .n{width:36px;height:36px;border-radius:50%;background:var(--bad);color:var(--sf);display:grid;place-items:center;font-weight:700}
+.er .t{font-weight:600;line-height:1.3}
+.er .c{display:inline-block;font:12px ui-monospace,Consolas,monospace;color:var(--mu);border:1px solid var(--ln);border-radius:4px;padding:0 6px;margin-bottom:2px}
+.er .tm{font-size:13px;color:var(--mu);margin-top:2px}
+.er .m{background:var(--bw);color:var(--bad);border-radius:999px;padding:3px 12px;font-weight:700;white-space:nowrap}
+.er ol{grid-column:2/-1;margin:8px 0 0;padding-left:18px;color:var(--mu);font-size:14px}
+.bar{height:18px;border-radius:4px;background:var(--ac);min-width:2px}
+.pr{display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;margin:6px 0}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--ln)}
 .scroll{overflow-x:auto}
+.tb{border:1px solid var(--ln);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(20,32,43,.07)}
+.tb table{min-width:480px}
+.tb th{background:color-mix(in srgb,var(--ac) 9%,var(--sf));color:var(--mu);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:12px 16px;border-bottom:1px solid var(--ln)}
+.tb td{padding:12px 16px}
+.tb td:nth-child(3){color:var(--mu);font-size:14px}
+.tb tr:last-child td{border-bottom:0}
+.tb tr:not(:first-child):hover td{background:color-mix(in srgb,var(--ac) 5%,transparent)}
+.tb tr:nth-child(2) td{background:color-mix(in srgb,var(--ok) 11%,transparent);font-size:18px}
+.tb tr:nth-child(2) td:first-child{box-shadow:inset 4px 0 0 var(--ok)}
+.tb tr:nth-child(6) td{border-top:2px solid var(--ln)}
+.tb tr:nth-child(8) td:nth-child(2){color:var(--bad);font-weight:700}
+.tb tr:nth-child(9) td:nth-child(2){color:var(--wn);font-weight:700}
+.v{min-width:130px}.v b{font-variant-numeric:tabular-nums}
+.v i{display:block;height:6px;border-radius:3px;background:var(--ln);margin-top:6px;position:relative;overflow:hidden}
+.v i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--ac);border-radius:3px}
+.tb tr:nth-child(2) .v i::after{background:var(--ok)}
 .demo{font-size:13px;color:var(--mu);margin-top:8px}
 .hide{display:none}
 </style>
@@ -57,21 +81,59 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;bord
 </header>
 <nav class="tabs" id="tabs"></nav>
 
+<!-- Dnešný prehľad: vidí pracovník aj vedúci -->
 <div id="v-home">
 <div class="box">
-<h2>Stav zmeny</h2>
+<h2>Živé počítadlo zmeny</h2>
+<div class="row"><span class="big" id="lv-clock">--:--:--</span><span id="lv-state" class="demo"></span></div>
+<div style="height:10px;border-radius:5px;background:var(--bg);border:1px solid var(--ln);margin:10px 0"><div id="lv-bar" class="bar" style="height:100%;width:0"></div></div>
+<div class="grid">
+<div class="k"><small>Uplynulo</small><b id="lv-el">0 min</b></div>
+<div class="k"><small>Zostáva</small><b id="lv-rem">–</b></div>
+<div class="k"><small>Vyrobené kusy</small><b id="lv-prod">0</b></div>
+<div class="k"><small>OK kusy</small><b id="lv-ok">0</b></div>
+<div class="k"><small>NOK kusy</small><b id="lv-nok">0</b></div>
+<div class="k"><small>Prestoje (min)</small><b id="lv-dt">0</b></div>
+</div>
+<p class="demo">Počítadlo sa prepočítava každú sekundu podľa aktuálneho času a denných údajov zmeny.</p>
+</div>
+
+<div class="box">
+<h2>Dnešný stav zmeny</h2>
 <div class="row"><span class="big" id="oee"></span><span id="goal"></span><b id="delta"></b></div>
 <div class="grid" style="margin-top:10px">
 <div class="k"><small>Availability (A)</small><b id="kA"></b></div>
 <div class="k"><small>Performance (P)</small><b id="kP"></b></div>
 <div class="k"><small>Quality (Q)</small><b id="kQ"></b></div>
 </div>
+<p class="demo" id="note"></p>
 </div>
-<div class="box"><h2 id="errT"></h2><div id="errs"></div></div>
-<div class="box"><h2>Tabuľka OEE</h2><div class="scroll"><table id="tbl"></table></div></div>
+
+<div class="box"><h2>Dnešné top 3 chyby</h2><div id="errs"></div></div>
+
+<div class="box">
+<h2>Straty podľa hodiny zmeny</h2>
+<p class="demo" id="lossNote" style="margin-top:0"></p>
+<div id="loss"></div>
+</div>
+
+<div class="box"><h2>Dnešná tabuľka OEE</h2><div class="scroll tb"><table id="tbl"></table></div></div>
 <p id="herr" class="bad hide"></p>
 </div>
 
+<!-- Mesačný prehľad: iba vedúci (server to overuje) -->
+<div id="v-month" class="hide">
+<div class="box"><h2 id="mErrT"></h2><div id="mErrs"></div></div>
+<div class="box">
+<h2 id="mChT"></h2>
+<p class="demo">Mesačné hodnoty zachované z pôvodného prototypu. Graf zobrazuje súhrn za všetkých 21 ranných zmien, nie vymyslený priebeh jednotlivých dní.</p>
+<div id="mBars"></div>
+<div class="scroll tb" style="margin-top:12px"><table id="mTbl"></table></div>
+</div>
+<p id="merr" class="bad hide"></p>
+</div>
+
+<!-- Účty: iba vedúci -->
 <div id="v-users" class="hide">
 <div class="box">
 <h2>Vytvoriť účet</h2>
@@ -91,7 +153,10 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;bord
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function num(n){return n.toLocaleString("sk-SK").replace(/\u00a0/g,"&nbsp;")}
-function pct(x){return (x*100).toLocaleString("sk-SK",{minimumFractionDigits:1,maximumFractionDigits:1})+"%"}
+function dec(x,d){return x.toLocaleString("sk-SK",{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pct(x){return dec(x*100,1)+"%"}
+
+// ---------- API ----------
 function api(path,method,body){
  var o={method:method||"GET",credentials:"same-origin",headers:{"Content-Type":"application/json"}};
  if(body)o.body=JSON.stringify(body);
@@ -102,14 +167,20 @@ function api(path,method,body){
   });
  });
 }
+function handle401(e){if(e&&e.status===401){showLogin();return true}return false}
+function showErr(id,e){$(id).textContent=e.message;$(id).classList.remove("hide")}
+
+// ---------- Prihlásenie ----------
+var timer=null,SH=null;
 function showLogin(){
+ clearInterval(timer);SH=null;
  $("app").classList.add("hide");$("login").classList.remove("hide");$("p").value="";
 }
 function login(){
  $("lerr").classList.add("hide");$("lbtn").disabled=true;
  api("/api/login","POST",{u:$("u").value.trim(),p:$("p").value})
   .then(enter)
-  .catch(function(e){$("lerr").textContent=e.message;$("lerr").classList.remove("hide")})
+  .catch(function(e){showErr("lerr",e)})
   .then(function(){$("lbtn").disabled=false});
 }
 function logout(){api("/api/logout","POST").catch(function(){}).then(showLogin)}
@@ -117,8 +188,8 @@ function logout(){api("/api/logout","POST").catch(function(){}).then(showLogin)}
 function enter(me){
  $("login").classList.add("hide");$("app").classList.remove("hide");
  $("who").textContent=me.u+", "+me.r;
- var t=[["home","Prehľad"]];
- if(me.r==="Vedúci")t.push(["users","Účty"]);
+ var t=[["home","Dnešný prehľad"]];
+ if(me.r==="Vedúci"){t.push(["month","Mesačný prehľad"]);t.push(["users","Účty"])}
  $("tabs").innerHTML=t.map(function(x,i){
   return '<button class="'+(i?'':'on')+'" data-v="'+x[0]+'">'+x[1]+'</button>';
  }).join("");
@@ -126,41 +197,99 @@ function enter(me){
  show("home");
 }
 function show(n,btn){
- ["home","users"].forEach(function(v){$("v-"+v).classList.toggle("hide",v!==n)});
+ ["home","month","users"].forEach(function(v){$("v-"+v).classList.toggle("hide",v!==n)});
  if(btn){[].forEach.call($("tabs").children,function(b){b.classList.remove("on")});btn.classList.add("on")}
- if(n==="home")loadOee();
+ if(n==="home")loadHome();
+ if(n==="month")loadMonth();
  if(n==="users")renderUsers();
 }
-function handle401(e){if(e.status===401){showLogin();return true}return false}
-function loadOee(){
+
+// ---------- Spoločné časti ----------
+function errCard(e,i){
+ return '<div class="er"><span class="n">'+(i+1)+'</span><div><span class="c">'+esc(e.code)+'</span>'+
+  '<div class="t">'+esc(e.title)+'</div><div class="tm">🕒 Čas vzniku: '+esc(e.when)+'</div></div>'+
+  '<span class="m">'+e.minutes+' min</span><ol>'+
+  e.steps.map(function(s){return '<li>'+esc(s)+'</li>'}).join("")+'</ol></div>';
+}
+function vrow(label,val,calc,bold){
+ return '<tr><td>'+(bold?'<b>'+label+'</b>':label)+'</td><td><div class="v"><b>'+pct(val)+'</b><i style="--w:'+(val*100).toFixed(1)+'%"></i></div></td><td>'+calc+'</td></tr>';
+}
+function trow(label,val,calc){return '<tr><td>'+label+'</td><td>'+val+'</td><td>'+(calc||'')+'</td></tr>'}
+function oeeTable(d,head2,downLabel,downCalc){
+ return '<tr><th>Ukazovateľ</th><th>'+head2+'</th><th>Výpočet</th></tr>'+
+  vrow("OEE",d.oee,"A × P × Q",true)+
+  vrow("Availability",d.availability,"("+num(d.plannedMin)+" − "+num(d.downtimeMin)+") / "+num(d.plannedMin)+" min")+
+  vrow("Performance",d.performance,num(d.produced)+" / "+num(d.idealProduced)+" ks")+
+  vrow("Quality",d.quality,num(d.ok)+" / "+num(d.produced)+" ks")+
+  trow("Vyrobené kusy",num(d.produced))+
+  trow("OK kusy",num(d.ok))+
+  trow("NOK kusy",num(d.nok))+
+  trow(downLabel,num(d.downtimeMin),downCalc);
+}
+
+// ---------- Dnešný prehľad ----------
+function loadHome(){
  $("herr").classList.add("hide");
- api("/api/oee").then(function(d){
+ api("/api/today").then(function(d){
   $("title").textContent="Zmena: "+d.label;
   var diff=(d.oee-d.target)*100,good=diff>=0;
   $("oee").textContent=pct(d.oee);$("oee").className="big "+(good?"ok":"bad");
   $("goal").textContent="cieľ "+Math.round(d.target*100)+"%";
-  $("delta").textContent=(good?"▲ náskok ":"▼ strata ")+Math.abs(diff).toLocaleString("sk-SK",{maximumFractionDigits:0})+" p. b.";
+  $("delta").textContent=(good?"▲ náskok ":"▼ strata ")+dec(Math.abs(diff),1)+" p. b.";
   $("delta").className=good?"ok":"bad";
   $("kA").textContent=pct(d.availability);$("kP").textContent=pct(d.performance);$("kQ").textContent=pct(d.quality);
-  $("errT").textContent="Top "+d.topErrors.length+" chyby ("+d.shiftsCount+" ranných zmien)";
-  $("errs").innerHTML=d.topErrors.map(function(e,i){
-   return '<div class="err"><b>'+(i+1)+'. '+esc(e.code)+' | '+esc(e.title)+': '+e.minutes+' min</b><ol>'+
-    e.steps.map(function(s){return '<li>'+esc(s)+'</li>'}).join("")+'</ol></div>';
+  $("note").textContent=d.note;
+  $("errs").innerHTML=d.topErrors.map(errCard).join("");
+
+  var max=Math.max.apply(null,d.hourly.map(function(h){return h.loss}));
+  var top=d.hourly.slice().sort(function(a,b){return b.loss-a.loss}).slice(0,2);
+  $("lossNote").textContent="Strata = 100 % − performance v danej hodine. Najväčšie straty: "+
+   top.map(function(h){return h.hour+". hodina (−"+h.loss+" %)"}).join(" a ")+".";
+  $("loss").innerHTML=d.hourly.map(function(h){
+   return '<div class="pr"><span>'+h.hour+' · '+esc(h.label)+'</span>'+
+    '<div class="bar" style="width:'+(h.loss/max*100).toFixed(0)+'%;background:var(--'+(h.critical?'bad':'ac')+')"></div>'+
+    '<b>−'+h.loss+' %</b></div>';
   }).join("");
-  $("tbl").innerHTML='<tr><th>Ukazovateľ</th><th>Hodnota</th><th>Výpočet</th></tr>'+
-   '<tr><td><b>OEE</b></td><td><b>'+pct(d.oee)+'</b></td><td>A × P × Q</td></tr>'+
-   '<tr><td>Availability</td><td>'+pct(d.availability)+'</td><td>('+num(d.plannedMin)+' − '+num(d.downtimeMin)+') / '+num(d.plannedMin)+' min</td></tr>'+
-   '<tr><td>Performance</td><td>'+pct(d.performance)+'</td><td>'+num(d.produced)+' / '+num(d.idealProduced)+' ks</td></tr>'+
-   '<tr><td>Quality</td><td>'+pct(d.quality)+'</td><td>'+num(d.ok)+' / '+num(d.produced)+' ks</td></tr>'+
-   '<tr><td>Vyrobené kusy</td><td>'+num(d.produced)+'</td><td></td></tr>'+
-   '<tr><td>OK kusy</td><td>'+num(d.ok)+'</td><td></td></tr>'+
-   '<tr><td>NOK kusy</td><td>'+num(d.nok)+'</td><td></td></tr>'+
-   '<tr><td>Prestoje (min)</td><td>'+num(d.downtimeMin)+'</td><td></td></tr>';
- }).catch(function(e){
-  if(handle401(e))return;
-  $("herr").textContent=e.message;$("herr").classList.remove("hide");
- });
+
+  var top3=d.topErrors.reduce(function(s,e){return s+e.minutes},0);
+  $("tbl").innerHTML=oeeTable(d,"Hodnota","Prestoje spolu (min)",
+   top3+" (top 3) + "+(d.downtimeMin-top3)+" (ostatné, odhad)");
+  startLive(d);
+ }).catch(function(e){if(!handle401(e))showErr("herr",e)});
 }
+
+// ---------- Živé počítadlo ----------
+function startLive(d){
+ SH={start:d.startSec,end:d.endSec,min:d.shiftMin,prod:d.produced,ok:d.ok,dt:d.downtimeMin};
+ clearInterval(timer);tick();timer=setInterval(tick,1000);
+}
+function tick(){
+ if(!SH)return;
+ var d=new Date(),n=d.getHours()*3600+d.getMinutes()*60+d.getSeconds();
+ var f=Math.min(1,Math.max(0,(n-SH.start)/(SH.end-SH.start)));
+ var el=Math.round(f*SH.min),pr=Math.floor(SH.prod*f),ok=Math.min(pr,Math.floor(SH.ok*f));
+ $("lv-clock").textContent=d.toLocaleTimeString("sk-SK");
+ $("lv-state").textContent=n<SH.start?"Zmena sa ešte nezačala":n>=SH.end?"Zmena skončila":"Zmena beží";
+ $("lv-bar").style.width=(f*100)+"%";
+ $("lv-el").textContent=el+" min";$("lv-rem").textContent=(SH.min-el)+" min";
+ $("lv-prod").textContent=pr;$("lv-ok").textContent=ok;$("lv-nok").textContent=pr-ok;
+ $("lv-dt").textContent=Math.round(SH.dt*f);
+}
+
+// ---------- Mesačný prehľad (vedúci) ----------
+function loadMonth(){
+ $("merr").classList.add("hide");
+ api("/api/month").then(function(d){
+  $("mErrT").textContent="Top 3 chyby – pracovný mesiac ("+d.shiftsCount+" ranných zmien)";
+  $("mChT").textContent="Graf ukazovateľov – pracovný mesiac ("+d.shiftsCount+" zmien)";
+  $("mErrs").innerHTML=d.topErrors.map(errCard).join("");
+  function bar(l,v){return '<div class="pr"><span>'+l+'</span><div class="bar" style="width:'+(v*100).toFixed(1)+'%"></div><b>'+pct(v)+'</b></div>'}
+  $("mBars").innerHTML=bar("OEE",d.oee)+bar("Availability",d.availability)+bar("Performance",d.performance)+bar("Quality",d.quality);
+  $("mTbl").innerHTML=oeeTable(d,"Hodnota za "+d.shiftsCount+" zmien","Prestoje (min)","");
+ }).catch(function(e){if(!handle401(e))showErr("merr",e)});
+}
+
+// ---------- Účty (vedúci) ----------
 function renderUsers(){
  api("/api/users").then(function(list){
   $("ut").innerHTML="<tr><th>Prihlasovacie meno</th><th>Rola</th></tr>"+
@@ -176,11 +305,10 @@ function addUser(){
  $("uerr").classList.add("hide");
  api("/api/users","POST",{u:$("nu").value.trim(),p:$("np").value,r:$("nr").value})
   .then(function(){$("nu").value="";$("np").value="";renderUsers()})
-  .catch(function(e){
-   if(handle401(e))return;
-   $("uerr").textContent=e.message;$("uerr").classList.remove("hide");
-  });
+  .catch(function(e){if(!handle401(e))showErr("uerr",e)});
 }
+
+// ---------- Štart: over existujúcu reláciu ----------
 api("/api/me").then(enter).catch(showLogin);
 $("p").addEventListener("keydown",function(e){if(e.key==="Enter")login()});
 </script>
