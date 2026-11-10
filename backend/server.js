@@ -7,7 +7,7 @@ const crypto = require("crypto");
 
 const PORT = process.env.PORT || 3000;
 const USERS_FILE = path.join(__dirname, "users.json");
-const INDEX_FILE = path.join(__dirname, "index.html");
+const INDEX_FILE = path.join(__dirname, "..", "frontend", "index.html");
 const SESSION_MS = 8 * 3600 * 1000;
 const ROLES = ["Pracovník", "Vedúci"];
 
