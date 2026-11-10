@@ -1,5 +1,4 @@
-// OEE Linka: backend (Node.js 18+, bez externých závislostí)
-// Spustenie: node server.js  →  http://localhost:3000
+
 
 const http = require("http");
 const fs = require("fs");
@@ -12,7 +11,7 @@ const INDEX_FILE = path.join(__dirname, "index.html");
 const SESSION_MS = 8 * 3600 * 1000;
 const ROLES = ["Pracovník", "Vedúci"];
 
-// ---------- Dáta OEE (zatiaľ pevné, neskôr nahradiť DB / PLC) ----------
+
 const SHIFT = {
   label: "06:00–14:00",
   shiftsCount: 21,
@@ -48,7 +47,7 @@ function computeOee() {
   });
 }
 
-// ---------- Heslá a účty ----------
+
 function hashPw(pw) {
   const salt = crypto.randomBytes(16);
   const h = crypto.scryptSync(pw, salt, 64);
@@ -79,7 +78,7 @@ const sessions = new Map();   // token -> { u, r, exp }
 const loginLog = [];          // { u, r, t }
 const attempts = new Map();   // ip -> { n, t }
 
-// ---------- Pomocné funkcie ----------
+
 function send(res, code, obj, headers) {
   res.writeHead(code, Object.assign({
     "Content-Type": "application/json; charset=utf-8",
@@ -115,19 +114,19 @@ function tooMany(ip) {
   return a.n >= 10;
 }
 
-// ---------- Server ----------
+
 const server = http.createServer(async (req, res) => {
   const url = req.url.split("?")[0];
   const ip = req.socket.remoteAddress;
 
   try {
-    // Frontend
+
     if (req.method === "GET" && (url === "/" || url === "/index.html")) {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
       return fs.createReadStream(INDEX_FILE).pipe(res);
     }
 
-    // Prihlásenie
+
     if (req.method === "POST" && url === "/api/login") {
       if (tooMany(ip)) return send(res, 429, { error: "Príliš veľa pokusov. Skúste neskôr." });
       const b = await readBody(req);
@@ -146,21 +145,21 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    // Odhlásenie
+
     if (req.method === "POST" && url === "/api/logout") {
       const s = getSession(req);
       if (s) sessions.delete(s.token);
       return send(res, 200, { ok: true }, { "Set-Cookie": "sid=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0" });
     }
 
-    // Všetko nižšie vyžaduje prihlásenie
+
     const s = getSession(req);
     if (!s) return send(res, 401, { error: "Neprihlásený." });
 
     if (req.method === "GET" && url === "/api/me") return send(res, 200, { u: s.u, r: s.r });
     if (req.method === "GET" && url === "/api/oee") return send(res, 200, computeOee());
 
-    // Správa účtov: len vedúci
+
     if (url === "/api/users" || url === "/api/logins") {
       if (s.r !== "Vedúci") return send(res, 403, { error: "Nedostatočné oprávnenie." });
 

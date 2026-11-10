@@ -92,8 +92,6 @@ function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function num(n){return n.toLocaleString("sk-SK").replace(/\u00a0/g,"&nbsp;")}
 function pct(x){return (x*100).toLocaleString("sk-SK",{minimumFractionDigits:1,maximumFractionDigits:1})+"%"}
-
-// ---------- API ----------
 function api(path,method,body){
  var o={method:method||"GET",credentials:"same-origin",headers:{"Content-Type":"application/json"}};
  if(body)o.body=JSON.stringify(body);
@@ -104,8 +102,6 @@ function api(path,method,body){
   });
  });
 }
-
-// ---------- Prihlásenie ----------
 function showLogin(){
  $("app").classList.add("hide");$("login").classList.remove("hide");$("p").value="";
 }
@@ -136,8 +132,6 @@ function show(n,btn){
  if(n==="users")renderUsers();
 }
 function handle401(e){if(e.status===401){showLogin();return true}return false}
-
-// ---------- Prehľad OEE ----------
 function loadOee(){
  $("herr").classList.add("hide");
  api("/api/oee").then(function(d){
@@ -167,8 +161,6 @@ function loadOee(){
   $("herr").textContent=e.message;$("herr").classList.remove("hide");
  });
 }
-
-// ---------- Účty (vedúci) ----------
 function renderUsers(){
  api("/api/users").then(function(list){
   $("ut").innerHTML="<tr><th>Prihlasovacie meno</th><th>Rola</th></tr>"+
@@ -189,8 +181,6 @@ function addUser(){
    $("uerr").textContent=e.message;$("uerr").classList.remove("hide");
   });
 }
-
-// ---------- Štart: over existujúcu reláciu ----------
 api("/api/me").then(enter).catch(showLogin);
 $("p").addEventListener("keydown",function(e){if(e.key==="Enter")login()});
 </script>
