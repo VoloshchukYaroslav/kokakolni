@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OEE Improvement Engine · L01</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three/build/three.module.js",
+  "three/addons/": "/vendor/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div id="labels"></div>
+
+<!-- Technical frame: decoration lives only here -->
+<div id="frame" aria-hidden="true">
+  <i class="x tl">+</i><i class="x tr">+</i><i class="x bl">+</i><i class="x br">+</i>
+  <span class="rule rl"></span><span class="rule rr"></span>
+  <span class="code c1">L01 // E-DRIVE // P01</span>
+  <span class="code c2">OEE-ENG · BUILD 0.1</span>
+  <span class="code c3">SHIFT <b id="fr-shift">00/21</b></span>
+  <span class="code c4">EVT <b id="fr-evt">0/0</b></span>
+</div>
+
+<!-- Top: time tile, timeline, view switch -->
+<header id="top">
+  <section id="time" class="tile">
+    <div class="sec" style="--c:var(--s-time)"><span>Time · <span id="mode-tag">Replay</span></span><span>T-01</span></div>
+    <div class="time-body">
+      <div id="clock">--:--</div>
+      <div class="tt"><b>Zmena</b><small id="date-label">—</small></div>
+    </div>
+    <div class="controls">
+      <button id="btn-play" class="key" title="Play / pause (Space)">Pause</button>
+      <div class="speed" id="speed" role="group" aria-label="Replay speed">
+        <button data-speed="1">1×</button><button data-speed="60">60×</button><button data-speed="600">600×</button>
+      </div>
+      <select id="shift-select" aria-label="Shift"></select>
+    </div>
+    <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="38"/><circle cx="50" cy="50" r="30"/><path d="M50 26v24l16 10M50 12v6M50 82v6M12 50h6M82 50h6"/></svg>
+  </section>
+
+  <section id="timeline-wrap">
+    <div class="tl-head-row">
+      <span class="lab"><b>Výroba</b> Shift timeline · 06:00–14:00</span>
+      <button id="predict" class="predict hidden"></button>
+    </div>
+    <div id="timeline" title="Click to jump">
+      <div id="tl-track"></div>
+      <div id="tl-head"></div>
+    </div>
+    <div id="tl-axis"></div>
+  </section>
+
+  <button id="btn-table" class="tile key-tile" title="Table view" hidden style="display:none">
+    <span class="sec" style="--c:var(--s-data)"><span>Data</span><span>V-02</span></span>
+    <span class="tt"><b>Tabuľky</b><small>Tables</small></span>
+    <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><rect x="16" y="22" width="68" height="56"/><path d="M16 40h68M16 59h68M39 22v56M62 22v56"/></svg>
+  </button>
+</header>
+
+<!-- Focused station: side tile -->
+<aside id="card" class="tile hidden" aria-live="polite"></aside>
+
+<!-- Bottom data panel -->
+<footer id="bottom">
+  <nav id="tabs" role="tablist">
+    <button role="tab" data-tab="now" class="on"><b>Zmena</b><small>Shift now</small></button>
+    <button role="tab" data-tab="loss"><b>Straty</b><small>Losses</small></button>
+    <button role="tab" data-tab="ai"><b>Analýza</b><small>Insights</small></button>
+  </nav>
+  <div id="panel">
+    <div id="tab-now" class="tab"></div>
+    <div id="tab-loss" class="tab hidden"></div>
+    <div id="tab-ai" class="tab hidden"></div>
+  </div>
+</footer>
+
+<div id="toasts"></div>
+<div id="loading"><div class="ld-box"><em>Loading line L01</em><span id="ld-msg"></span></div></div>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>
