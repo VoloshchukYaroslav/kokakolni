@@ -54,7 +54,7 @@ The next expected slot comes from the calendar, not from later data.
 OEE points gained: OEE = good minutes / planned minutes at the 60 s ideal cycle, so a removed stop minute is worth P × Q / planned, a slow minute Q / planned, one bad part 1 / planned.
 
 ## Controls
-Line view: drag = pan, wheel = zoom (3D), click a station = details, Esc = back, Space = play/pause, ←/→ = ±5 min, click the timeline to jump.
+Line view: drag = pan, wheel = zoom (3D), click a station = details (←/→ = previous/next station while zoomed in), Esc = back, Space = play/pause, ←/→ = ±5 min (line view), click the timeline to jump.
 
 ## Data
 `data/data.json` is built from `data/source.xlsx`:
