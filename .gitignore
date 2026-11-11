@@ -1,2 +1,7 @@
-   node_modules
-   users.json
+node_modules/
+
+# accounts and secrets stay on the machine, never in git
+users.json
+.env
+.env.*
+!.env.example
