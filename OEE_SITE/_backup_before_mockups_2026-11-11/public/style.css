@@ -255,26 +255,3 @@ button,select{font:inherit;color:inherit;background:none;border:0;padding:0;curs
 .status-tile .status-t{font-size:28px;margin-top:6px}
 .status-tile .frow{padding:2px 0}
 .status-tile .body{padding-top:8px;padding-bottom:8px}
-
-/* ---------- 2D line (review build) ---------- */
-#line2d{position:fixed;left:28px;right:28px;top:calc(var(--top-h) + 40px);bottom:calc(var(--bottom-h) + var(--tabs-h) + 40px);
-  display:flex;flex-direction:column;justify-content:center;gap:12px;z-index:1;transition:right .25s}
-body.focus #line2d{right:430px}
-.l2-cap b{font:600 26px/1 var(--cond);margin-right:12px}
-.l2-cap small{font:400 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-m)}
-.l2-row{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:6px}
-.st2{display:flex;flex-direction:column;gap:6px;min-height:130px;padding:10px 10px 0;text-align:left;background:var(--tile);color:var(--on);
-  clip-path:polygon(10px 0,100% 0,100% 100%,0 100%,0 10px);transition:background-color .15s}
-.st2 .no{font:400 10px/1 var(--mono);color:var(--on-m);letter-spacing:.08em}
-.st2 .nm{font:600 18px/1.05 var(--cond);letter-spacing:.01em;flex:1}
-.st2 .cd{font:400 10px/1 var(--mono);color:var(--on-m);min-height:10px}
-.st2 .bar{display:block;height:8px;margin:0 -10px;background:var(--ok)}
-.st2:hover{background:var(--tile-2)}
-.st2.blocked .bar,.st2.starved .bar{background:var(--warn)}
-.st2.starved{background:var(--tile-2);color:var(--on-m)}
-.st2.pause .bar{background:var(--on-m)}
-.st2.fault{background:var(--bad);color:#fff}
-.st2.fault .no,.st2.fault .cd{color:#fff}
-.st2.fault .bar{background:#fff;animation:blink .8s steps(2) infinite}
-.st2.sel{border-top:4px solid var(--s-time);background:var(--tile-3)}
-.l2-belt{height:10px;background:var(--tile)}
