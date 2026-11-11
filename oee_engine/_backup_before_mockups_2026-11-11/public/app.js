@@ -44,16 +44,6 @@ const FIX = {
   "weekday": "Wednesday is the only day below target. Fix the Wednesday ST-038 slot first; then compare Wednesday staffing and maintenance plan.",
 };
 
-// 2D review build: the 3D scene stays off (model not shipped). Set to false and add model/ to bring 3D back.
-const VIEW_2D = true;
-const STATIONS_2D = [
-  ["Lift_In", "IN", null, "lift"], ["ST-001", "1", "ST-001", "robot"], ["Station_02", "2", null, "gantry"],
-  ["ST-016", "3", "ST-016", "camera"], ["Station_04", "4", null, "manual"], ["ST-017", "5", "ST-017", "auto_ring"],
-  ["Station_06", "6", null, "turn"], ["Station_07", "7", null, "gantry"], ["ST-038", "7.5", "ST-038", "camera"],
-  ["Station_08", "8", null, "auto_top"], ["ST-046", "9a", "ST-046", "leak"], ["ST-047", "9b", "ST-047", "leak"],
-  ["Station_10", "10", null, "robot"], ["Lift_Out", "OUT", null, "lift"],
-];
-
 // ============================================================ helpers
 const $ = (id) => document.getElementById(id);
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -537,13 +527,6 @@ function setLayer1(obj, on) { obj.traverse((o) => (on ? o.layers.enable(1) : o.l
 function focusStation(name) {
   const st = L01.byName[name];
   if (!st) return;
-  if (VIEW_2D) {
-    focus = st;
-    $("card").classList.remove("hidden");
-    renderCard();
-    document.body.classList.add("focus");
-    return;
-  }
   if (focus && focus !== st) setLayer1(focus.root, false);
   if (!focus) $("card").dataset.prev = JSON.stringify(view);
   focus = st;
@@ -559,12 +542,6 @@ function focusStation(name) {
 }
 function unfocus() {
   if (!focus) return;
-  if (VIEW_2D) {
-    focus = null;
-    $("card").classList.add("hidden");
-    document.body.classList.remove("focus");
-    return;
-  }
   setLayer1(focus.root, false);
   focus = null;
   $("card").classList.add("hidden");
@@ -572,30 +549,6 @@ function unfocus() {
   try { prev = JSON.parse($("card").dataset.prev || "null"); } catch (e) { prev = null; }
   animateView(prev || fitView);
   document.body.classList.remove("focus");
-}
-
-// ============================================================ 2D line (review build)
-function build2D() {
-  canvas.style.display = "none";
-  $("labels").style.display = "none";
-  const wrap = document.createElement("section");
-  wrap.id = "line2d";
-  wrap.setAttribute("aria-label", "Line L01");
-  wrap.innerHTML = '<div class="l2-cap"><b>Linka L01</b><small>Line view · 2D</small></div><div class="l2-row"></div><div class="l2-belt"></div>';
-  document.body.appendChild(wrap);
-  const row = wrap.querySelector(".l2-row");
-  STATIONS_2D.forEach(([name, stage, code, mechanism], i) => {
-    const el = document.createElement("button");
-    el.type = "button";
-    el.className = "st2 run";
-    el.innerHTML = `<span class="no">${esc(stage)}</span><span class="nm">${esc(shortName(name))}</span><span class="cd">${esc(code || "")}</span><span class="bar"></span>`;
-    el.addEventListener("click", () => (focus && focus.name === name ? unfocus() : focusStation(name)));
-    row.appendChild(el);
-    const st = { name, idx: i, stage, code, mechanism, en: STATION_EN[name] || name, state: "run", reason: null, label: el,
-      actions: [], lamps: {}, pallet: null, dur: 10, t: 0, parked: false };
-    L01.stations.push(st);
-    L01.byName[name] = st;
-  });
 }
 
 // ============================================================ labels over stations
@@ -682,11 +635,6 @@ function updateStations(dt, states) {
   states.forEach((s, i) => {
     const st = L01.stations[i];
     st.state = s.state; st.reason = s.reason;
-    if (VIEW_2D) {
-      const cls = "st2 " + s.state + (focus === st ? " sel" : "");
-      if (st.label.className !== cls) st.label.className = cls;
-      return;
-    }
     if (s.state !== "starved") st.parked = false;
     switch (s.state) {
       case "run":
@@ -708,7 +656,7 @@ function updateStations(dt, states) {
     const cls = "lbl " + s.state + (hovered === st.name ? " hl" : "");
     if (st.label.className !== cls) st.label.className = cls;
   });
-  if (!VIEW_2D) L01.mixer.update(0);
+  L01.mixer.update(0);
 }
 
 function seek(t) { sim.t = clamp(t, 0, SHIFT_LEN_S - 1); lastActive = activeSet(DAYS[sim.date], sim.t); }
@@ -1003,18 +951,6 @@ function frame(now) {
   const states = stationStates(DAYS[sim.date], sim.t);
   updateStations(dt, states);
 
-  if (!VIEW_2D) render3D(now, dt);
-
-  if (now - slowTick > 200) {                         // UI text 5×/s is enough
-    slowTick = now;
-    renderTop();
-    renderNow(states);
-    if (focus) renderCard();
-  }
-  requestAnimationFrame(frame);
-}
-
-function render3D(now, dt) {
   stepAnim(now);
   applyView();
   hazeMat.opacity += ((focus ? 0.55 : 0) - hazeMat.opacity) * Math.min(1, dt * 8);
@@ -1034,10 +970,17 @@ function render3D(now, dt) {
     }
   }
   placeLabels();
+
+  if (now - slowTick > 200) {                         // UI text 5×/s is enough
+    slowTick = now;
+    renderTop();
+    renderNow(states);
+    if (focus) renderCard();
+  }
+  requestAnimationFrame(frame);
 }
 
 function resize() {
-  if (VIEW_2D) return;
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   if (contentRect || L01.root) {
     const wasFit = fitView && Math.abs(view.h - fitView.h) < 1e-6;
@@ -1064,13 +1007,10 @@ async function boot() {
       return `<option value="${d}">${fmtDate(d).slice(0, 10)} · OEE ${pct(s.OEE)}${low ? " · below target" : ""}</option>`;
     }).join("");
 
-    if (VIEW_2D) build2D();
-    else {
-      await loadModel();
-      renderer.setSize(window.innerWidth, window.innerHeight, false);
-      computeFit();
-      Object.assign(view, fitView);
-    }
+    await loadModel();
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    computeFit();
+    Object.assign(view, fitView);
 
     // start: today's shift if it is in the data, otherwise the first Wednesday; a few minutes before its first stop
     const today = new Date(), iso = today.getFullYear() + "-" + pad2(today.getMonth() + 1) + "-" + pad2(today.getDate());
