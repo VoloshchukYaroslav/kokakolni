@@ -802,7 +802,7 @@ function updateStations(dt, states) {
       default: break;                                                // planned pause: line clock is frozen too
     }
     if (st.pallet) st.pallet.visible = !st.parked;
-    for (const a of st.actions) a.time = Math.min(st.t, a.getClip().duration - 1e-4);   // shorter clips hold their last frame
+    for (const a of st.actions) a.time = Math.min(st.t, a.getClip().duration);   // shorter clips hold their last key (exactly: hand-offs are STEP keys at the end)
     setLamp(st, s.state === "run" ? "G" : s.state === "fault" ? "R" : s.state === "pause" ? null : "Y");
     const cls = "lbl " + s.state + (hovered === st.name ? " hl" : "") + (labelsCompact && s.state !== "fault" ? " c" : "");
     if (st.label.className !== cls) st.label.className = cls;
