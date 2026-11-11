@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+# login accounts: passwords and hashes stay on this machine
+accounts.csv
+auth/
+
+# local copies made before updates
+_backup*/
