@@ -567,14 +567,24 @@ function refit() {
   if (wasFit && !focus) animateView(fitView, 300);
 }
 
+const touches = new Map(); let pinchD = 0;
+const pinchDist = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
 let drag = null;
 canvas.addEventListener("pointerdown", (e) => {
   if (VIEW_2D) return;
   drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false };
   canvas.setPointerCapture(e.pointerId);
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size === 2) { drag = null; pinchD = pinchDist(); }   // two fingers = pinch zoom
 });
 canvas.addEventListener("pointermove", (e) => {
   if (VIEW_2D || !camera) return;
+  if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size === 2) {
+    const d = pinchDist();
+    if (pinchD && !focus && fitView) { const [a, b] = [...touches.values()]; zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, pinchD / d); }
+    pinchD = d; return;
+  }
   if (drag) {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 4) { drag.moved = true; canvas.classList.add("grab"); }
@@ -585,26 +595,31 @@ canvas.addEventListener("pointermove", (e) => {
     drag.x = e.clientX; drag.y = e.clientY;
   } else hoverAt(e.clientX, e.clientY);
 });
+canvas.addEventListener("pointercancel", (e) => { touches.delete(e.pointerId); pinchD = 0; drag = null; canvas.classList.remove("grab"); });
 canvas.addEventListener("pointerup", (e) => {
+  touches.delete(e.pointerId); pinchD = 0;
   canvas.classList.remove("grab");
   if (drag && !drag.moved) clickAt(e.clientX, e.clientY);
   drag = null;
 });
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  if (VIEW_2D || focus || !fitView) return;
-  if (!e.ctrlKey) { moveAlongConveyor(((e.deltaY + e.deltaX) / 100) * track.pitch * 0.5); return; }   // wheel = along the line
+function zoomAt(cx, cy, factor) {
   anim = null;
   const W = window.innerWidth, H = window.innerHeight, aspect = W / H;
-  const nx = (e.clientX / W) * 2 - 1, ny = -(e.clientY / H) * 2 + 1;
+  const nx = (cx / W) * 2 - 1, ny = -(cy / H) * 2 + 1;
   const wx = (camera.left + camera.right) / 2 + nx * view.h * aspect, wy = (camera.top + camera.bottom) / 2 + ny * view.h;
   const offX = (camera.left + camera.right) / 2 - view.cx, offY = (camera.top + camera.bottom) / 2 - view.cy;
-  const nh = clamp(view.h * Math.exp(e.deltaY * 0.0012), fitView.h * 0.3, lineH * 1.05);
+  const nh = clamp(view.h * factor, fitView.h * 0.3, lineH * 1.05);
   const k = nh / view.h;
   view.h = nh;
   view.cx = wx - nx * nh * aspect - offX * k;
   view.cy = wy - ny * nh - offY * k;
   clampView();
+}
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  if (VIEW_2D || focus || !fitView) return;
+  if (!e.ctrlKey) { moveAlongConveyor(((e.deltaY + e.deltaX) / 100) * track.pitch * 0.5); return; }   // wheel = along the line
+  zoomAt(e.clientX, e.clientY, Math.exp(e.deltaY * 0.0012));
 }, { passive: false });
 
 // ============================================================ picking & focus
@@ -1809,6 +1824,8 @@ function resize() {
   }
 }
 window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", () => setTimeout(resize, 250));
+if (window.ResizeObserver) { let raf = 0; new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(layout); }).observe($("top")); }   // the header changes height when it wraps
 
 // ============================================================ boot
 async function boot() {
@@ -1826,7 +1843,7 @@ async function boot() {
     DATA = await r.json();
     if (cfg) CONFIG = cfg;
     const q = new URLSearchParams(location.search).get("view");
-    VIEW_2D = q === "2d" ? true : q === "3d" ? false : CONFIG.view === "2d";
+    VIEW_2D = q === "2d" ? true : q === "3d" ? false : (CONFIG.view === "2d" || matchMedia("(max-width:700px)").matches);   // phones: 2D by default
     REPLAY_DATA = DATA;
     DATES = DATA.shifts.map((s) => s.date).sort();
     HOUR_TO = new Map(DATA.hours.map((h) => [h.id, abs(h.date, isoToSec(h.to))]));
@@ -1858,6 +1875,7 @@ async function boot() {
     setDate(start, first ? Math.max(0, first.s - 180) : 0);
     setSpeed(60); syncPlay();
     setTab("now");
+    if (matchMedia("(max-width:700px)").matches) setPanel(false);   // phone: start with the panel lowered
     if (new URLSearchParams(location.search).has("debug")) window.__oee = { L01, sim, lineClock, analysis };   // for checks in the console
     $("loading").remove();
     requestAnimationFrame((t) => { lastT = t; frame(t); });

@@ -564,3 +564,147 @@ body.behind .mode button[data-mode="live"].on::before{background:var(--ink-m);an
 .fchip{display:inline-flex;align-items:center;gap:8px;margin-left:12px;height:24px;padding:0 4px 0 10px;background:var(--ink);color:var(--on);font:500 12px/1 var(--sans);letter-spacing:0}
 .fchip button{width:20px;height:20px;border:0;background:var(--rule);color:var(--on);font-size:14px;line-height:1}
 #issues-btn.issues-strip{width:28px;height:auto;padding:0;border-radius:0;gap:0}
+
+/* =====================================================================================
+   RESPONSIVE. Desktop (wider than 1280px) is the design above, unchanged.
+   <=1280 laptop (above) | <=1024 tablet | <=900 tablet portrait / phone landscape: panel stacks | <=700 phone
+   ===================================================================================== */
+body{overscroll-behavior:none;-webkit-text-size-adjust:100%}
+button,select{touch-action:manipulation}
+@supports (height:100dvh){#scene{height:100dvh}#app{height:100dvh}}
+
+@media (max-width:1024px){
+  #top{grid-template-columns:minmax(0,290px) minmax(0,1fr);grid-template-areas:"sign mid" "ctl ctl";gap:10px 16px;padding:14px 20px 10px}
+  .sign{grid-area:sign}.mid{grid-area:mid}
+  .controls{grid-area:ctl;flex-direction:row;min-width:0}
+  .ctl-row{flex:1}.controls .btn-line{flex:1}
+  .clock{font-size:60px}
+  #stage{padding:12px 20px}
+  .legend{left:20px}
+  body:not(.v2d) .legend{right:20px}
+  body:not(.v2d) .stopped{left:20px}
+  .stopped{min-width:0;width:min(520px,100%)}
+  #tabs button{padding:0 18px;font-size:14px;letter-spacing:.05em}
+  .oee{padding:18px 16px 20px 20px;gap:14px}
+  .oee-num{font-size:64px}
+  .drawer.open{width:380px;padding:16px 20px}
+  .rate{min-width:0}
+  .ai{grid-template-columns:minmax(0,1fr) 340px}
+  .finding{padding:14px 20px}.finding h3{font-size:28px}
+  .month{grid-template-columns:240px minmax(0,1fr) minmax(0,1fr)}
+  .mcol{padding:12px 16px}.mcol:first-child{padding-left:20px}
+  .lcol{padding:12px 18px}.loss-month .lcol,.loss-month .lcol:first-child{padding-left:20px;padding-right:18px}
+  .loss-shift .sum{padding:10px 20px}
+  #tv-table th,#tv-table td{padding:0 12px}
+  #tv-table th:first-child,#tv-table td:first-child{padding-left:20px}
+  #issues,.issues-in{width:340px}
+  #card{right:20px;width:min(380px,calc(100vw - 40px))}
+  #toasts{right:20px}
+  .l2-row,.l2-names{gap:6px}.l2-names span{font-size:12px}
+}
+
+@media (max-width:900px){
+  :root{--panel-h:min(44vh,380px)}
+  /* the bottom panel stacks: every tab becomes one scrolling column */
+  .now,.ai,.month,.loss-month{grid-template-columns:minmax(0,1fr);height:auto}
+  .oee{padding:14px 20px;justify-content:space-between}
+  .oee-num{font-size:56px;margin-top:6px}.oee-num small{font-size:24px}
+  .goal{font-size:14px}
+  .pull{padding:0 20px 10px;flex-direction:column;align-items:stretch}
+  .pull svg{display:none}
+  .pull button{height:44px;width:100%}
+  .pull button .vlab{writing-mode:horizontal-tb;transform:none;font-size:14px;letter-spacing:.1em}
+  .drawer{width:auto;max-height:0;padding:0 20px;border-left:0;transition:max-height .25s ease,padding .25s ease}
+  .drawer.open{width:auto;max-height:560px;padding:8px 20px 12px;border-top:1px solid var(--rule)}
+  .bay{border-left:0;border-top:6px solid var(--accent);padding:14px 20px 18px;flex-wrap:wrap;gap:8px}
+  .now.open .bay{padding:14px 20px 18px;gap:8px}
+  .ctr,.now.open .ctr{flex:1 1 140px;min-width:0;padding:12px 14px 14px}
+  .ctr .v,.now.open .ctr .v{font-size:36px;margin-top:10px}
+  .now.open .ctr .h{font-size:15px;margin:0 -14px;padding:0 14px 8px}
+  .fixfirst{border-left:0;border-top:6px solid var(--accent);padding:12px 20px}
+  .mcol,.mcol:first-child{border-left:0;border-top:1px solid var(--rule);padding:12px 20px;overflow-x:auto}
+  .mcol:first-child{border-top:0}
+  .mlunch{grid-template-columns:minmax(0,1fr)}
+  .loss-month .lcol,.loss-month .lcol:first-child{border-left:0;border-top:1px solid var(--rule);padding:10px 20px}
+  .loss-month .lcol:first-child{border-top:0}
+  .lrow{grid-template-columns:96px 1fr 44px}
+  .sum .v{font-size:32px}.loss-shift .sum .v{font-size:30px}
+  /* 2D line: scroll sideways instead of squeezing 14 stations */
+  #line2d{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .l2-row,.l2-names{min-width:800px}
+  /* table view */
+  .tv-pick-row{flex-wrap:wrap}
+  #tv-tabs button{height:44px;padding:0 14px;font-size:14px}
+  #tvbody{position:relative}
+  .tv-table{padding-right:28px}
+  .issues-wrap{position:absolute;top:0;right:0;bottom:0;z-index:6}
+  #issues,.issues-in{width:min(380px,82vw)}
+  #tv-table{font-size:14px}
+  #card{right:12px;width:min(380px,calc(100vw - 24px))}
+  #toasts{right:12px}
+}
+
+@media (max-width:700px){
+  :root{--panel-h:min(46vh,400px)}
+  #top{grid-template-columns:minmax(0,1fr);grid-template-areas:"sign" "mid" "ctl";gap:8px;
+    padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left))}
+  .sign{padding:10px 14px}
+  .clock{font-size:44px}.sign-shift .no{font-size:20px}
+  .tl-date{flex-wrap:wrap;row-gap:6px}
+  #who{display:none}
+  .tl-grid{grid-template-columns:48px 1fr;margin-top:8px}
+  .lane{height:20px}
+  .tl-axis{margin-left:58px}
+  .btn-dark{padding:0 16px}
+  .btn-line{font-size:13px}
+  .speed-pick select{padding:0 32px 0 12px}
+  .tv-pick .tl-date span:first-child{font-size:11px}
+  #stage{padding:8px 12px}
+  .legend{left:12px;bottom:6px;gap:14px;font-size:11px}
+  body:not(.v2d) .legend{right:12px}
+  .stopped,body:not(.v2d) .stopped{width:auto;align-self:stretch}
+  body:not(.v2d) .stopped{left:12px;right:12px}
+  .stopped .hd b{font-size:17px}.stopped .nm{font-size:16px}.stopped .min{font-size:18px}
+  .stopped .row{gap:10px;padding:8px 12px}
+  #tabs{flex:1;min-width:0}
+  #tabs button{flex:1;padding:0 4px;height:44px;font-size:12px;letter-spacing:.02em}
+  #panel-toggle{padding:0 10px;height:32px;letter-spacing:.04em}
+  .oee,.pull,.bay{padding-left:16px;padding-right:16px}
+  .drawer,.drawer.open{padding-left:16px;padding-right:16px}
+  .ctr .v,.now.open .ctr .v{font-size:32px}
+  .finding{padding:14px 16px}.finding h3{font-size:24px}
+  .evc{min-width:96px}
+  .mcol,.mcol:first-child,.loss-month .lcol,.loss-month .lcol:first-child,.loss-shift .sum,.fixfirst{padding-left:16px;padding-right:16px}
+  .scope2 button small{display:none}
+  #tv-table th,#tv-table td{padding:0 10px}
+  #tv-table th:first-child,#tv-table td:first-child{padding-left:14px}
+  #card{left:8px;right:8px;width:auto}
+  #toasts{left:12px;right:12px;align-items:stretch}
+  #fix-title{font-size:24px}
+  #fix-body li{font-size:16px;grid-template-columns:34px 1fr}
+  #fix-body li::before{width:34px;height:34px}
+  .ld-box em{font-size:26px}
+}
+
+/* phone held sideways: very little height, so everything gets compact */
+@media (max-height:520px) and (orientation:landscape){
+  :root{--panel-h:min(42vh,170px)}
+  #top{padding:6px 16px;gap:6px 12px}
+  .sign{padding:6px 12px;gap:6px}
+  .clock{font-size:34px}.sign-shift .no{font-size:16px}
+  .tl-grid{margin-top:6px}.lane{height:14px}.tl-axis{margin-top:3px}
+  .btn-dark,.btn-line,.speed-pick select{min-height:34px}
+  #stage{padding:6px 16px}
+  #tabs button{height:36px}
+  .oee-num{font-size:44px}
+  .ctr .v,.now.open .ctr .v{font-size:26px;margin-top:6px}
+}
+
+/* fingers need bigger targets than a mouse */
+@media (pointer:coarse){
+  .mode button{height:36px}
+  #logout{height:36px}
+  .seg button{height:34px}
+  .fchip,.fchip button{min-height:28px}
+  #panel-toggle{min-height:36px}
+}

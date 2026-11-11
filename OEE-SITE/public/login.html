@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sign in · OEE Improvement Engine · L01</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="/fonts/fonts.css">
@@ -10,8 +10,8 @@
 :root{--bg:#ECEEF1;--panel:#2A2D33;--rule:#3D4148;--accent:#BCC2CA;--ink:#24272C;--ink-m:#6A7079;--on:#FFFFFF;--on-m:#A2A8B0;--line:#D3D7DD;--alert:#D0473D}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:500 15px/1.4 "IBM Plex Sans","Segoe UI",Arial,sans-serif}
-main{min-height:100%;display:grid;place-items:center;padding:24px}
-.box{width:400px;max-width:100%;background:var(--panel);color:var(--on);border-radius:6px;overflow:hidden}
+main{min-height:100%;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:24px}
+.box{width:min(400px,100%);background:var(--panel);color:var(--on);border-radius:6px;overflow:hidden}
 .hd{padding:22px 26px 16px;border-bottom:6px solid var(--accent)}
 .hd b{display:block;font:600 30px/1.05 "IBM Plex Sans Condensed","IBM Plex Sans",sans-serif}
 .hd small{display:block;margin-top:6px;font:400 12px/1 "IBM Plex Mono",monospace;letter-spacing:.08em;color:var(--on-m)}
