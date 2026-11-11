@@ -1520,6 +1520,12 @@ window.addEventListener("keydown", (e) => {
     else if (tv.open) openTables(false);
   }
   if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); sim.playing = !sim.playing; syncPlay(); }
+  if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && focus && !e.shiftKey) {   // zoomed on a station: step to the neighbour
+    e.preventDefault();
+    const next = L01.stations[focus.idx + (e.key === "ArrowRight" ? 1 : -1)];
+    if (next) focusStation(next.name);
+    return;
+  }
   if (e.key === "ArrowRight") { if (e.shiftKey) moveAlongConveyor(track.pitch); else seek(sim.t + 300); }
   if (e.key === "ArrowLeft") { if (e.shiftKey) moveAlongConveyor(-track.pitch); else seek(sim.t - 300); }
 });
