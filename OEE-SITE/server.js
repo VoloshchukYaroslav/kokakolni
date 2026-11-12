@@ -241,7 +241,7 @@ async function handleFix(req, res) {
 // Everything except the login page, its fonts and POST /api/login needs a session. Roles: manager, worker.
 const AUTH_FILE = path.join(ROOT, "auth", "users.json");
 let USERS = [];
-try { USERS = JSON.parse(fs.readFileSync(AUTH_FILE, "utf8")); }
+try { USERS = JSON.parse(process.env.USERS_JSON || fs.readFileSync(AUTH_FILE, "utf8")); }   // hosting (Render): hashes come from the USERS_JSON variable
 catch (e) { console.warn("WARNING: no auth/users.json, nobody can log in. Run: node tools/make_accounts.js"); }
 const SESSION_MS = 8 * 3600e3;
 const sessions = new Map();                     // sid -> { email, role, exp }
@@ -265,7 +265,7 @@ function sameOrigin(req) {
 }
 async function handleLogin(req, res) {
   if (!sameOrigin(req)) return sendJson(res, 403, { error: "Cross-origin" });
-  const ip = req.socket.remoteAddress, f = fails.get(ip);
+  const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress, f = fails.get(ip);   // behind a proxy: real client address
   if (f && f.n >= 5 && Date.now() - f.t < 5 * 60e3) return sendJson(res, 429, { error: "Too many attempts. Wait 5 minutes." });
   let body;
   try { body = await readBody(req, 1024); } catch (e) { return sendJson(res, 400, { error: e.message }); }
@@ -281,7 +281,7 @@ async function handleLogin(req, res) {
   const sid = crypto.randomBytes(32).toString("hex");
   sessions.set(sid, { email: u.email, role: u.role, exp: Date.now() + SESSION_MS });
   res.writeHead(200, { "Content-Type": MIME[".json"], "Cache-Control": "no-store",
-    "Set-Cookie": `sid=${sid}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MS / 1000}` });
+    "Set-Cookie": `sid=${sid}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MS / 1000}` + (req.headers["x-forwarded-proto"] === "https" ? "; Secure" : "") });
   res.end(JSON.stringify({ email: u.email, role: u.role }));
 }
 
